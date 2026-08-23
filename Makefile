@@ -1,38 +1,22 @@
-ALL_SRC          := $(filter-out $(wildcard gates/*_tb.sv) $(wildcard adders/*_tb.sv) $(wildcard alu/*_tb.sv) $(wildcard memory/*_tb.sv), \
-                                  $(wildcard gates/*.sv) $(wildcard adders/*.sv) $(wildcard alu/*.sv) $(wildcard memory/*.sv))
-COMPUTER_SRC     := $(filter-out $(wildcard computer/*_tb.sv), $(wildcard computer/*.sv))
+# Top-level delegator. The HDL half is driven by hdl/Makefile; the Rust half by Cargo.
+# TEST= is a command-line variable, so it propagates to the sub-make automatically:
+#   make TEST=CPU_tb
 
-GATE_TESTS       := $(basename $(notdir $(wildcard gates/*_tb.sv)))
-ADDER_TESTS      := $(basename $(notdir $(wildcard adders/*_tb.sv)))
-ALU_TESTS        := $(basename $(notdir $(wildcard alu/*_tb.sv)))
-MEMORY_TESTS     := $(basename $(notdir $(wildcard memory/*_tb.sv)))
-COMPUTER_TESTS   := $(basename $(notdir $(wildcard computer/*_tb.sv)))
-TESTS            := $(GATE_TESTS) $(ADDER_TESTS) $(ALU_TESTS) $(MEMORY_TESTS) $(COMPUTER_TESTS)
+.PHONY: test lint clean hackasm all
 
-.PHONY: test $(TESTS)
+# Bare `make` runs the HDL tests, as it did before hackasm existed.
+.DEFAULT_GOAL := test
 
-test: $(if $(TEST),$(TEST),$(TESTS))
+all: test hackasm
 
-$(GATE_TESTS): %: gates/%.sv
-	@echo "--- $< ---"
-	@iverilog -g2012 -s $@ -o /tmp/$@ $(ALL_SRC) $< && vvp /tmp/$@
+test lint:
+	@$(MAKE) -C hdl $@
 
-$(ADDER_TESTS): %: adders/%.sv
-	@echo "--- $< ---"
-	@iverilog -g2012 -s $@ -o /tmp/$@ $(ALL_SRC) $< && vvp /tmp/$@
+hackasm:
+	@test -f hackasm/Cargo.toml || { echo "hackasm/Cargo.toml not found - create the crate first"; exit 1; }
+	@cargo build --release --manifest-path hackasm/Cargo.toml
 
-$(ALU_TESTS): %: alu/%.sv
-	@echo "--- $< ---"
-	@iverilog -g2012 -s $@ -o /tmp/$@ $(ALL_SRC) $< && vvp /tmp/$@
-
-$(MEMORY_TESTS): %: memory/%.sv
-	@echo "--- $< ---"
-	@iverilog -g2012 -s $@ -o /tmp/$@ $(ALL_SRC) $< && vvp /tmp/$@
-
-# Testbench is passed first so `define in *_tb.sv is seen before `ifndef in sources (e.g. ROM_tb -> ROM)
-$(COMPUTER_TESTS): %: computer/%.sv
-	@echo "--- $< ---"
-	@iverilog -g2012 -s $@ -o /tmp/$@ $< $(ALL_SRC) $(COMPUTER_SRC) && vvp /tmp/$@
-
-lint:
-	@verilator --lint-only --sv --top-module Computer Computer.sv $(ALL_SRC) $(COMPUTER_SRC)
+clean:
+	@$(MAKE) -C hdl clean
+	@rm -rf build
+	@test -f hackasm/Cargo.toml && cargo clean --manifest-path hackasm/Cargo.toml || true

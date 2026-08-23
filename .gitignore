@@ -1,3 +1,9 @@
 .claude/
 .direnv/
 .vscode/
+
+# Build products: hdl/build (sim binaries), build/ (assembled .hex, bitstreams)
+build/
+
+# Rust
+target/
