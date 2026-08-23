@@ -1,5 +1,5 @@
 {
-  description = "SystemVerilog project for ICE40 FPGA (Go board)";
+  description = "Hack computer: SystemVerilog for ICE40 (Go board) + hackasm toolchain";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -15,46 +15,56 @@
       in
       {
         devShells.default = pkgs.mkShell {
+          nativeBuildInputs = with pkgs; [
+            pkg-config         # so the serialport crate can locate libudev
+          ];
+
           buildInputs = with pkgs; [
             # ICE40 FPGA toolchain
             yosys              # Synthesis tool
             nextpnr            # Place and route for ICE40 (includes ICE40 support)
             icestorm           # Bitstream generation tools (icepack, iceprog, etc.)
-            
+
             # SystemVerilog/Verilog tools
             iverilog           # Icarus Verilog simulator
             verilator          # Verilog/SystemVerilog simulator and linter
-            
+
+            # Rust toolchain for hackasm (assembler + UART programmer)
+            rustc
+            cargo
+            rustfmt
+            clippy
+            rust-analyzer
+
+            # Native dependency of the serialport crate (UART programmer)
+            udev
+
             # Development tools
             gtkwave            # Waveform viewer
             python3            # Often needed for scripts
             python3Packages.pip
-            
+
             # Utilities
             which
             git
           ];
 
+          # Lets rust-analyzer resolve std sources
+          RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
+
           shellHook = ''
-            echo "ICE40 FPGA Development Environment"
-            echo "=================================="
-            echo "Available tools:"
-            echo "  - yosys: FPGA synthesis"
-            echo "  - nextpnr: Place and route (ICE40)"
-            echo "  - icepack: Convert ASCII to binary bitstream"
-            echo "  - iceprog: Program ICE40 FPGAs"
-            echo "  - iverilog: Verilog simulation"
-            echo "  - verilator: SystemVerilog/Verilog linting and simulation"
-            echo "  - gtkwave: Waveform viewer"
+            echo "Hack Computer Development Environment"
+            echo "===================================="
+            echo "HDL:     iverilog, verilator, yosys, nextpnr, icepack, iceprog, gtkwave"
+            echo "hackasm: cargo, rustc, clippy, rustfmt, rust-analyzer"
             echo ""
-            echo "Example workflow:"
-            echo "  1. yosys -p 'synth_ice40 -top <top_module> -json <output>.json' <design>.sv"
-            echo "  2. nextpnr-ice40 --hx1k --json <input>.json --pcf <constraints>.pcf --asc <output>.asc"
-            echo "  3. icepack <input>.asc <output>.bin"
-            echo "  4. iceprog <output>.bin"
+            echo "  make test              # run all HDL testbenches"
+            echo "  make TEST=CPU_tb       # run a single testbench"
+            echo "  make lint              # lint with Verilator"
+            echo "  make hackasm           # build the Rust CLI"
+            echo ""
           '';
         };
       }
     );
 }
-
