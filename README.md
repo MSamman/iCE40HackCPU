@@ -14,12 +14,12 @@ targeting the ICE40 FPGA (Go board), with a Rust toolchain for assembling and lo
 | `hdl/computer/` | CPU, ROM, Memory |
 | `hdl/Computer.sv` | Top-level module |
 | `hdl/scripts/` | ICE40 synthesis, place & route, bitstream packing, flashing |
-| `hackasm/` | Rust CLI: Hack assembler + UART programmer |
+| `hack/` | Rust CLI: Hack assembler + UART programmer |
 | `programs/` | Hack assembly sources (Mult, Fill) |
 | `build/` | Generated artifacts (gitignored) |
 
 `programs/` sits at the top level because it is the handoff point between the two halves:
-`hackasm` assembles `.asm` into a `.hex` that the HDL consumes.
+`hack` assembles `.asm` into a `.hack` that the HDL consumes.
 
 ## Simulation
 
@@ -36,10 +36,10 @@ make clean          # remove build artifacts
 Compiled testbenches are cached in `hdl/build/`, so re-running only recompiles what changed.
 The simulation itself re-runs every time.
 
-## hackasm
+## hack
 
 ```sh
-make hackasm        # cargo build --release
+make hack           # cargo build --release
 ```
 
 ## FPGA Synthesis (ICE40)

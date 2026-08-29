@@ -2,21 +2,21 @@
 # TEST= is a command-line variable, so it propagates to the sub-make automatically:
 #   make TEST=CPU_tb
 
-.PHONY: test lint clean hackasm all
+.PHONY: test lint clean hack all
 
-# Bare `make` runs the HDL tests, as it did before hackasm existed.
+# Bare `make` runs the HDL tests, as it did before hack existed.
 .DEFAULT_GOAL := test
 
-all: test hackasm
+all: test hack
 
 test lint:
 	@$(MAKE) -C hdl $@
 
-hackasm:
-	@test -f hackasm/Cargo.toml || { echo "hackasm/Cargo.toml not found - create the crate first"; exit 1; }
-	@cargo build --release --manifest-path hackasm/Cargo.toml
+hack:
+	@test -f hack/Cargo.toml || { echo "hack/Cargo.toml not found - create the crate first"; exit 1; }
+	@cargo build --release --manifest-path hack/Cargo.toml
 
 clean:
 	@$(MAKE) -C hdl clean
 	@rm -rf build
-	@test -f hackasm/Cargo.toml && cargo clean --manifest-path hackasm/Cargo.toml || true
+	@test -f hack/Cargo.toml && cargo clean --manifest-path hack/Cargo.toml || true

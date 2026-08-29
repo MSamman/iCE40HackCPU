@@ -1,0 +1,5 @@
+name      = "nand2tetris-simulator"
+
+[symbols]
+SCREEN = 16384
+KBD    = 24576

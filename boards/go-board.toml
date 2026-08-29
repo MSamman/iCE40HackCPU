@@ -1,0 +1,4 @@
+name      = "go-board"
+ram-words = 3072        # 12 EBRs
+
+[symbols]

@@ -1,5 +1,5 @@
 {
-  description = "Hack computer: SystemVerilog for ICE40 (Go board) + hackasm toolchain";
+  description = "Hack computer: SystemVerilog for ICE40 (Go board) + hack toolchain";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -29,7 +29,7 @@
             iverilog           # Icarus Verilog simulator
             verilator          # Verilog/SystemVerilog simulator and linter
 
-            # Rust toolchain for hackasm (assembler + UART programmer)
+            # Rust toolchain for hack (assembler + UART programmer)
             rustc
             cargo
             rustfmt
@@ -56,12 +56,12 @@
             echo "Hack Computer Development Environment"
             echo "===================================="
             echo "HDL:     iverilog, verilator, yosys, nextpnr, icepack, iceprog, gtkwave"
-            echo "hackasm: cargo, rustc, clippy, rustfmt, rust-analyzer"
+            echo "hack:    cargo, rustc, clippy, rustfmt, rust-analyzer"
             echo ""
             echo "  make test              # run all HDL testbenches"
             echo "  make TEST=CPU_tb       # run a single testbench"
             echo "  make lint              # lint with Verilator"
-            echo "  make hackasm           # build the Rust CLI"
+            echo "  make hack              # build the Rust CLI"
             echo ""
           '';
         };
