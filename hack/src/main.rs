@@ -17,6 +17,9 @@ enum Commands {
         file: PathBuf,
 
         #[arg(short, long)]
+        board: Option<PathBuf>,
+
+        #[arg(short, long)]
         outfile: Option<PathBuf>,
     },
 }
@@ -25,11 +28,15 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match &cli.command {
-        Commands::Assemble { file, outfile } => {
+        Commands::Assemble {
+            file,
+            board,
+            outfile,
+        } => {
             let file_display = file.display();
             println!("Assembling {file_display}...");
 
-            let hack_string = assemble(file)?;
+            let hack_string = assemble(file, board)?;
 
             match outfile {
                 Some(_) => {}

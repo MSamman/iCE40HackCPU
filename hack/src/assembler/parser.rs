@@ -1,107 +1,12 @@
 use anyhow::{Context, Result};
 
 use crate::assembler::code;
-
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub(super) struct Symbol<'a>(pub &'a str);
-
-impl<'a> TryFrom<&'a str> for Symbol<'a> {
-    type Error = anyhow::Error;
-
-    fn try_from(symbol: &'a str) -> Result<Self> {
-        let is_symbol_char =
-            |c: char| c.is_ascii_alphanumeric() || matches!(c, '_' | '.' | '$' | ':');
-
-        match symbol.chars().next() {
-            None => anyhow::bail!("empty symbol: {symbol}"),
-            Some(c) if c.is_ascii_digit() => {
-                anyhow::bail!("symbol can't start with a digit: {symbol}")
-            }
-            Some(c) if symbol.chars().all(is_symbol_char) => Ok(Symbol(symbol)),
-            Some(_) => anyhow::bail!("bad symbol provided: {symbol}"),
-        }
-    }
-}
-
-pub(super) fn parse_symbol(symbol: &str) -> Result<Symbol<'_>> {
-    symbol.try_into()
-}
-
-#[test]
-fn test_good_symbol_parse() {
-    let want_symbols = [
-        ("LOOP", Symbol("LOOP")),
-        ("LOOP1", Symbol("LOOP1")),
-        ("_LO.OP$", Symbol("_LO.OP$")),
-    ];
-
-    for (s, want) in want_symbols {
-        assert_eq!(parse_symbol(s).unwrap(), want);
-    }
-}
-
-#[test]
-fn test_bad_symbol_parse() {
-    let test_symbols = ["1LOOP", "*LOOP", "LOO?P", "100", "32768", "-1"];
-
-    for s in test_symbols {
-        assert!(parse_symbol(s).is_err());
-    }
-}
-
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub(super) enum Value<'a> {
-    Symbol(Symbol<'a>),
-    Constant(u16),
-}
-
-impl<'a> TryFrom<&'a str> for Value<'a> {
-    type Error = anyhow::Error;
-
-    fn try_from(s: &'a str) -> Result<Self> {
-        let max_address = code::MAX_ADDRESS;
-        match s.parse::<u16>() {
-            Ok(value) if value > max_address => {
-                anyhow::bail!("{value} exceeds maximum value {max_address}")
-            }
-            Ok(value) => Ok(Value::Constant(value)),
-            Err(_) => parse_symbol(s).map(Value::Symbol),
-        }
-    }
-}
-
-pub(super) fn parse_value(symbol: &str) -> Result<Value<'_>> {
-    symbol.try_into()
-}
-
-#[test]
-fn test_good_value_parse() {
-    let want_values = [
-        ("LOOP", Value::Symbol(Symbol("LOOP"))),
-        ("LOOP1", Value::Symbol(Symbol("LOOP1"))),
-        ("_LOOP", Value::Symbol(Symbol("_LOOP"))),
-        ("1", Value::Constant(1)),
-        ("32767", Value::Constant(32767)),
-    ];
-
-    for (v, want) in want_values {
-        assert_eq!(parse_value(v).unwrap(), want);
-    }
-}
-
-#[test]
-fn test_bad_value_parse() {
-    let test_values = ["1LOOP", "*LOOP", "LOO?P", "32768", "-1"];
-
-    for v in test_values {
-        assert!(parse_value(v).is_err());
-    }
-}
+use crate::assembler::symbol;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(super) enum Instruction<'a> {
     A {
-        value: Value<'a>,
+        value: symbol::Value<'a>,
     },
     C {
         dest: code::Dest,
@@ -109,7 +14,7 @@ pub(super) enum Instruction<'a> {
         jump: code::Jump,
     },
     L {
-        label: Symbol<'a>,
+        label: symbol::Symbol<'a>,
     },
 }
 
@@ -162,7 +67,7 @@ fn parse_l_inst(inst: &str) -> Result<Instruction<'_>> {
         .with_context(|| format!("not an L instruction: missing trailing ')': {inst}"))?
         .trim();
 
-    parse_symbol(symbol)
+    symbol::parse_symbol(symbol)
         .map(|symbol| Instruction::L { label: symbol })
         .with_context(|| format!("bad L instruction provided {inst}"))
 }
@@ -174,7 +79,7 @@ fn parse_a_inst(inst: &str) -> Result<Instruction<'_>> {
         .with_context(|| format!("not an A instruction: missing leading '@': {inst}"))?
         .trim();
 
-    parse_value(symbol)
+    symbol::parse_value(symbol)
         .map(|value| Instruction::A { value })
         .with_context(|| format!("bad A instruction provided {inst}"))
 }
@@ -212,73 +117,73 @@ fn test_good_l_instructions() {
         (
             "(LOOP)",
             Instruction::L {
-                label: (Symbol("LOOP")),
+                label: (symbol::Symbol("LOOP")),
             },
         ),
         (
             "(LOOP) ",
             Instruction::L {
-                label: (Symbol("LOOP")),
+                label: (symbol::Symbol("LOOP")),
             },
         ),
         (
             " (LOOP)",
             Instruction::L {
-                label: (Symbol("LOOP")),
+                label: (symbol::Symbol("LOOP")),
             },
         ),
         (
             "( LOOP)",
             Instruction::L {
-                label: (Symbol("LOOP")),
+                label: (symbol::Symbol("LOOP")),
             },
         ),
         (
             "(LOOP )",
             Instruction::L {
-                label: (Symbol("LOOP")),
+                label: (symbol::Symbol("LOOP")),
             },
         ),
         (
             " ( LOOP ) ",
             Instruction::L {
-                label: (Symbol("LOOP")),
+                label: (symbol::Symbol("LOOP")),
             },
         ),
         (
             "(_LOOP_LOOP_)",
             Instruction::L {
-                label: (Symbol("_LOOP_LOOP_")),
+                label: (symbol::Symbol("_LOOP_LOOP_")),
             },
         ),
         (
             "(.LOOP.LOOP.)",
             Instruction::L {
-                label: (Symbol(".LOOP.LOOP.")),
+                label: (symbol::Symbol(".LOOP.LOOP.")),
             },
         ),
         (
             "($LOOP$LOOP$)",
             Instruction::L {
-                label: (Symbol("$LOOP$LOOP$")),
+                label: (symbol::Symbol("$LOOP$LOOP$")),
             },
         ),
         (
             "(:LOOP:LOOP:)",
             Instruction::L {
-                label: (Symbol(":LOOP:LOOP:")),
+                label: (symbol::Symbol(":LOOP:LOOP:")),
             },
         ),
         (
             "(LOOP1LOOP2)",
             Instruction::L {
-                label: (Symbol("LOOP1LOOP2")),
+                label: (symbol::Symbol("LOOP1LOOP2")),
             },
         ),
         (
             "(loop)",
             Instruction::L {
-                label: (Symbol("loop")),
+                label: (symbol::Symbol("loop")),
             },
         ),
     ];
@@ -307,79 +212,79 @@ fn test_good_a_instructions() {
         (
             "@LOOP",
             Instruction::A {
-                value: Value::Symbol(Symbol("LOOP")),
+                value: symbol::Value::Symbol(symbol::Symbol("LOOP")),
             },
         ),
         (
             "@LOOP ",
             Instruction::A {
-                value: Value::Symbol(Symbol("LOOP")),
+                value: symbol::Value::Symbol(symbol::Symbol("LOOP")),
             },
         ),
         (
             " @LOOP",
             Instruction::A {
-                value: Value::Symbol(Symbol("LOOP")),
+                value: symbol::Value::Symbol(symbol::Symbol("LOOP")),
             },
         ),
         (
             "@ LOOP",
             Instruction::A {
-                value: Value::Symbol(Symbol("LOOP")),
+                value: symbol::Value::Symbol(symbol::Symbol("LOOP")),
             },
         ),
         (
             " @ LOOP",
             Instruction::A {
-                value: Value::Symbol(Symbol("LOOP")),
+                value: symbol::Value::Symbol(symbol::Symbol("LOOP")),
             },
         ),
         (
             "@_LOOP_LOOP_",
             Instruction::A {
-                value: Value::Symbol(Symbol("_LOOP_LOOP_")),
+                value: symbol::Value::Symbol(symbol::Symbol("_LOOP_LOOP_")),
             },
         ),
         (
             "@.LOOP.LOOP.",
             Instruction::A {
-                value: Value::Symbol(Symbol(".LOOP.LOOP.")),
+                value: symbol::Value::Symbol(symbol::Symbol(".LOOP.LOOP.")),
             },
         ),
         (
             "@$LOOP$LOOP$",
             Instruction::A {
-                value: Value::Symbol(Symbol("$LOOP$LOOP$")),
+                value: symbol::Value::Symbol(symbol::Symbol("$LOOP$LOOP$")),
             },
         ),
         (
             "@:LOOP:LOOP:",
             Instruction::A {
-                value: Value::Symbol(Symbol(":LOOP:LOOP:")),
+                value: symbol::Value::Symbol(symbol::Symbol(":LOOP:LOOP:")),
             },
         ),
         (
             "@LOOP1LOOP2",
             Instruction::A {
-                value: Value::Symbol(Symbol("LOOP1LOOP2")),
+                value: symbol::Value::Symbol(symbol::Symbol("LOOP1LOOP2")),
             },
         ),
         (
             "@loop",
             Instruction::A {
-                value: Value::Symbol(Symbol("loop")),
+                value: symbol::Value::Symbol(symbol::Symbol("loop")),
             },
         ),
         (
             "@100",
             Instruction::A {
-                value: Value::Constant(100),
+                value: symbol::Value::Constant(100),
             },
         ),
         (
             "@100",
             Instruction::A {
-                value: Value::Constant(100),
+                value: symbol::Value::Constant(100),
             },
         ),
     ];

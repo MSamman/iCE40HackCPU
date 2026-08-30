@@ -46,7 +46,8 @@ fn check(asm: &Path) -> Result<(), Failed> {
     let expected_path = asm.with_extension("hack");
     let expected = fs::read_to_string(&expected_path)
         .map_err(|e| format!("{}: {e}", expected_path.display()))?;
-    let got = hack::assembler::assemble(asm).map_err(|e| format!("{}: {e}", asm.display()))?;
+    let got =
+        hack::assembler::assemble(asm, &None).map_err(|e| format!("{}: {e}", asm.display()))?;
 
     if got.trim_end() != expected.trim_end() {
         let (line, g, w) = first_diff(&got, &expected);

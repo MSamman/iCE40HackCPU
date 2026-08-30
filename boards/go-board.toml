@@ -1,4 +1,11 @@
 name      = "go-board"
-ram-words = 3072        # 12 EBRs
+rom-words = 3072    # 12 EBRs
+ram-words = 1024    # 4 EBRS
 
 [symbols]
+LED = 0x03FA
+SEG = 0x03FB
+BTN = 0x03FC
+UART_TX = 0x03FD
+UART_RX = 0x03FE
+UART_ST = 0x03FF
