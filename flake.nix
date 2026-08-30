@@ -35,6 +35,8 @@
             rustfmt
             clippy
             rust-analyzer
+            cargo-nextest     # nicer test runner: cargo nextest run
+            cargo-llvm-cov    # coverage: cargo llvm-cov nextest
 
             # Native dependency of the serialport crate (UART programmer)
             udev
@@ -52,11 +54,17 @@
           # Lets rust-analyzer resolve std sources
           RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
 
+          # cargo-llvm-cov normally wants rustup's llvm-tools-preview component.
+          # Point it at the exact LLVM that rustc was built with instead, so the
+          # .profraw format always matches.
+          LLVM_COV = "${pkgs.rustc.llvmPackages.llvm}/bin/llvm-cov";
+          LLVM_PROFDATA = "${pkgs.rustc.llvmPackages.llvm}/bin/llvm-profdata";
+
           shellHook = ''
             echo "Hack Computer Development Environment"
             echo "===================================="
             echo "HDL:     iverilog, verilator, yosys, nextpnr, icepack, iceprog, gtkwave"
-            echo "hack:    cargo, rustc, clippy, rustfmt, rust-analyzer"
+            echo "hack:    cargo, rustc, clippy, rustfmt, rust-analyzer, cargo-nextest, cargo-llvm-cov"
             echo ""
             echo "  make test              # run all HDL testbenches"
             echo "  make TEST=CPU_tb       # run a single testbench"
