@@ -1,0 +1,33 @@
+# LED pins:
+set_io ledsOut[0] 56
+set_io ledsOut[1] 57
+set_io ledsOut[2] 59
+set_io ledsOut[3] 60
+
+# Push-button switches:
+# set_io switchIn[0] 53
+# set_io switchIn[1] 51
+# set_io switchIn[2] 54
+# set_io switchIn[3] 52
+
+# Segment 1
+set_io segment1Out[6] 2    # G
+set_io segment1Out[5] 1    # F
+set_io segment1Out[4] 90   # E
+set_io segment1Out[3] 91   # D
+set_io segment1Out[2] 93   # C
+set_io segment1Out[1] 4    # B
+set_io segment1Out[0] 3    # A
+
+
+# Segment 2
+set_io segment2Out[6] 96   # G
+set_io segment2Out[5] 8    # F
+set_io segment2Out[4] 94   # E
+set_io segment2Out[3] 95   # D
+set_io segment2Out[2] 97   # C
+set_io segment2Out[1] 99   # B
+set_io segment2Out[0] 100  # A
+
+# Clock
+set_io clk 15

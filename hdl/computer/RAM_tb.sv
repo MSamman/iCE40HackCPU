@@ -1,11 +1,11 @@
 
-module Memory_tb;
+module RAM_tb;
   reg [15:0] in;
   reg        clk, load;
   reg [11:0] address;
   wire [15:0] out;
 
-  Memory dut(
+  RAM #(.WORDS(4096)) dut(
     .clk(clk),
     .in(in),
     .load(load),
@@ -28,11 +28,13 @@ module Memory_tb;
   task tick;
     @(posedge clk);
     #1;
+    @(negedge clk);
+    #1;
   endtask
 
   initial begin
-    $dumpfile("/tmp/Memory_tb.vcd");
-    $dumpvars(0, Memory_tb);
+    $dumpfile("/tmp/RAM_tb.vcd");
+    $dumpvars(0, RAM_tb);
    
     in_in[0] = 16'h7777; load_in[0] = 1'b0; address_in[0] = 11'b000; expected[0] = 16'h0000;
     in_in[1] = 16'h7777; load_in[1] = 1'b0; address_in[1] = 11'b001; expected[1] = 16'h0000;
@@ -63,7 +65,6 @@ module Memory_tb;
     pass_count = 0;
     fail_count = 0;
 
-    // Reset
     for (i = 0; i < 8; i++) begin
       in = 16'h0000;
       load = 1;

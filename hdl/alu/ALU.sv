@@ -1,19 +1,19 @@
 module ALU(
-  input [0:15] x,
-  input [0:15] y,
+  input [15:0] x,
+  input [15:0] y,
   input zx,
   input nx,
   input zy,
   input ny,
   input f,
   input no,
-  output [0:15] out,
+  output [15:0] out,
   output zr,
   output ng
 );
 
   // zx control bit
-  wire[0:15] w_zx;
+  wire[15:0] w_zx;
   Mux16 zx_out(
     .a(x),
     .b(16'h0000),
@@ -22,7 +22,7 @@ module ALU(
   );
 
   // nx control bit
-  wire[0:15] w_nx, w_nx_val;
+  wire[15:0] w_nx, w_nx_val;
   Not16 nx_val_out(
     .in(w_zx),
     .out(w_nx_val)
@@ -35,7 +35,7 @@ module ALU(
   );
 
   // zy control bit
-  wire[0:15] w_zy;
+  wire[15:0] w_zy;
   Mux16 zy_out(
     .a(y),
     .b(16'h0000),
@@ -44,7 +44,7 @@ module ALU(
   );
 
   // ny control bit
-  wire[0:15] w_ny, w_ny_val;
+  wire[15:0] w_ny, w_ny_val;
   Not16 ny_val_out(
     .in(w_zy),
     .out(w_ny_val)
@@ -57,7 +57,7 @@ module ALU(
   );
 
   // f control bit
-  wire [0:15] w_f, w_f_and, w_f_add;
+  wire [15:0] w_f, w_f_and, w_f_add;
   And16 f_and_out(
     .a(w_nx),
     .b(w_ny),
@@ -76,7 +76,7 @@ module ALU(
   );
 
   // no control bit
-  wire[0:15] w_no;
+  wire[15:0] w_no;
   Not16 no_not_out(
     .in(w_f),
     .out(w_no)
@@ -91,11 +91,11 @@ module ALU(
   // calculate zr
   wire w_zr_lh, w_zr_rh, w_zr;
   Or8way zr_lh(
-    .in(out[0:7]),
+    .in(out[7:0]),
     .out(w_zr_lh)
   );
   Or8way zr_rh(
-    .in(out[8:15]),
+    .in(out[15:8]),
     .out(w_zr_rh)
   );
   Or zr_or(
@@ -109,5 +109,5 @@ module ALU(
   );
 
   // calculate ng
-  assign ng = out[0];
+  assign ng = out[15];
 endmodule

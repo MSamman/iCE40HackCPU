@@ -1,8 +1,8 @@
 module Register16(
   input  logic       clk,
-  input  logic[0:15] in,
+  input  logic[15:0] in,
   input  logic       load,
-  output logic[0:15] out
+  output logic[15:0] out
 );
 
   genvar i;

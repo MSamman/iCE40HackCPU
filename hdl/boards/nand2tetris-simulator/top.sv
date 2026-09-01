@@ -1,4 +1,6 @@
-module Computer(
+`include "board_map.svh"
+
+module top(
   input logic clk,
   input logic reset
 );
@@ -9,8 +11,9 @@ module Computer(
   wire  logic[15:0] addressM;
   wire  logic[15:0] pc;
 
-  ROM computerROM(
-    .address(pc[9:0]),
+  ROM #(.WORDS(`ROM_WORDS))computerROM(
+    .clk(clk),
+    .address(pc[$clog2(`ROM_WORDS)-1:0]),
     .instruction(instruction)
   );
 
@@ -25,9 +28,9 @@ module Computer(
     .pc(pc)
   );
   
-  Memory computeRAM(
+  RAM #(.WORDS(`RAM_WORDS))computeRAM(
     .clk(clk),
-    .address(addressM[11:0]),
+    .address(addressM[$clog2(`RAM_WORDS)-1:0]),
     .in(outM),
     .load(writeM),
     .out(inM)

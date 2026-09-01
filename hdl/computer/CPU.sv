@@ -158,4 +158,4 @@ module CPU(
     .b(cLoadM),
     .out(writeM)
   );
-endmodule;
+endmodule

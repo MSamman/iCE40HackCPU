@@ -1,12 +1,12 @@
 module Counter(
   input  logic        clk,
-  input  logic[0:15]  in,
+  input  logic[15:0]  in,
   input  logic        load,
   input  logic        inc,
   input  logic        reset,
-  output logic[0:15]  out
+  output logic[15:0]  out
 );
-  wire[0:15] w_reg_out, w_inc_out, w_inc_mux_out, w_load_mux_out, w_next;
+  wire[15:0] w_reg_out, w_inc_out, w_inc_mux_out, w_load_mux_out, w_next;
 
   // check inc
   Incrementer inc_out(

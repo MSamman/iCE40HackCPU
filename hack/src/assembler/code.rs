@@ -1,7 +1,7 @@
 use anyhow::Result;
 use std::str::FromStr;
 
-pub(super) const MAX_ADDRESS: u16 = 32767;
+pub(super) const MAX_ADDRESS: u16 = 0x7FFF;
 
 #[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]

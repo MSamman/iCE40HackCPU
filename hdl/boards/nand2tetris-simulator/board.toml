@@ -1,0 +1,7 @@
+name      = "nand2tetris-simulator"
+rom-words = 32768
+ram-words = 32768
+
+[symbols]
+SCREEN = 0x4000
+KBD = 0x6000
