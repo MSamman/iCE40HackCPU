@@ -4,7 +4,7 @@
 `define RAM_WORDS     16'h400
 `define ROM_WORDS     16'hC00
 
-`define IO_SEL_BITS  3
+`define IO_SEL_BITS   3
 `define LED_ADDR      16'h4000
 `define SEG_ADDR      16'h4001
 `define BTN_ADDR      16'h4002

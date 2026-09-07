@@ -21,7 +21,7 @@ module ROM_tb;
   integer pass_count, fail_count;
   integer i;
 
-    task tick;
+  task tick;
     @(negedge clk);
     #1;
   endtask

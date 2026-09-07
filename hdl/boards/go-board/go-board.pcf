@@ -1,3 +1,6 @@
+# Clock
+set_io clk 15
+
 # LED pins:
 set_io ledsOut[0] 56
 set_io ledsOut[1] 57
@@ -29,5 +32,29 @@ set_io segment2Out[2] 97   # C
 set_io segment2Out[1] 99   # B
 set_io segment2Out[0] 100  # A
 
-# Clock
-set_io clk 15
+## UART Outputs
+set_io uartRxIn 73
+set_io uartTXOut 74
+
+## VGA Outputs
+set_io vgaHSyncOut 26
+set_io vgaVSyncOut 27
+set_io vgaRed0Out 36
+set_io vgaRed1Out 37
+set_io vgaRed2Out 40
+set_io vgaGrn0Out 29
+set_io vgaGrn1Out 30
+set_io vgaGrn2Out 33
+set_io vgaBlu0Out 28
+set_io vgaBlu1Out 41
+set_io vgaBlu2Out 42
+
+## PMOD Signals
+set_io pmod1Io 65
+set_io pmod2Io 64
+set_io pmod3Io 63
+set_io pmod4Io 62
+set_io pmod7Io 78
+set_io pmod8Io 79
+set_io pmod9Io 80
+set_io pmod10Io 81

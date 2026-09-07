@@ -3,7 +3,7 @@ BOARDS_DIR   := boards
 BOARDS       := $(notdir $(wildcard $(BOARDS_DIR)/*))
 
 # Leaf libraries: linked into every testbench
-SRC_DIRS     := gates adders alu memory
+SRC_DIRS     := gates adders alu memory uart
 ALL_SRC      := $(filter-out $(wildcard $(addsuffix /*_tb.sv,$(SRC_DIRS))), \
                              $(wildcard $(addsuffix /*.sv,$(SRC_DIRS))))
 
@@ -23,7 +23,7 @@ TOP     ?= top
 PROGRAM ?= program.hex
 
 # Board targets select boards/<BOARD>/ for HDL, pin constraints and settings.
-BOARD_GOALS := synth pnr bitstream flash lint-board
+BOARD_GOALS := synth pnr bitstream flash lint-board attach
 
 ifneq ($(filter $(BOARD_GOALS),$(MAKECMDGOALS)),)
   ifeq ($(strip $(BOARD)),)
@@ -51,7 +51,7 @@ SYNTH_SRC := $(BOARD_SRC) $(COMPUTER_SRC) $(ALL_SRC)
 # Boards carrying HDL, so `make lint` can skip config-only ones (e.g. sim).
 LINT_BOARDS := $(foreach b,$(BOARDS),$(if $(wildcard $(BOARDS_DIR)/$(b)/*.sv),$(b)))
 
-.PHONY: test lint lint-board clean boards synth pnr bitstream flash $(TESTS)
+.PHONY: test lint lint-board clean boards synth pnr bitstream flash attach $(TESTS)
 
 test: $(if $(TEST),$(TEST),$(TESTS))
 
@@ -113,5 +113,10 @@ flash: $(BUILD)/$(BOARD).bin
 clean:
 	@rm -rf $(BUILD)
 
+# USB_BUSID comes from boards/$(BOARD)/board.mk; boards without physical
+# hardware (e.g. the simulator) don't set it.
 attach:
+	@test -n "$(USB_BUSID)" || { \
+	  echo "make: board '$(BOARD)' sets no USB_BUSID in $(BOARD_DIR)/board.mk."; \
+	  exit 1; }
 	@usbipd.exe attach --wsl --busid $(USB_BUSID) 2>&1 | grep -v '^usbipd: info' || true
