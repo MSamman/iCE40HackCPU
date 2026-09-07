@@ -1,7 +1,9 @@
-use std::path::PathBuf;
+use io::Write;
+use std::fs::OpenOptions;
+use std::{io, path::PathBuf};
 
 use anyhow::Result;
-use clap::{Parser, Subcommand};
+use clap::{CommandFactory, Parser, Subcommand, ValueEnum, error::ErrorKind};
 use hack::assembler::assemble;
 
 #[derive(Parser)]
@@ -11,16 +13,25 @@ struct Cli {
     command: Commands,
 }
 
+#[derive(Copy, Clone, PartialEq, Eq, Debug, ValueEnum)]
+enum OutKind {
+    Stdout,
+    File,
+}
+
 #[derive(Subcommand)]
 enum Commands {
     Assemble {
-        file: PathBuf,
+        target_file: PathBuf,
 
         #[arg(short, long)]
         board: Option<PathBuf>,
 
-        #[arg(short, long)]
-        outfile: Option<PathBuf>,
+        #[arg(long, value_enum, default_value_t = OutKind::Stdout)]
+        out: OutKind,
+
+        #[arg(long, value_name = "PATH")]
+        filename: Option<PathBuf>,
     },
 }
 
@@ -29,18 +40,35 @@ fn main() -> Result<()> {
 
     match &cli.command {
         Commands::Assemble {
-            file,
+            target_file,
             board,
-            outfile,
+            out,
+            filename,
         } => {
-            let file_display = file.display();
+            let file_display = target_file.display();
             println!("Assembling {file_display}...");
 
-            let hack_string = assemble(file, board)?;
+            let hack_string = assemble(target_file, board)?;
 
-            match outfile {
-                Some(_) => {}
-                None => {
+            match out {
+                OutKind::File => {
+                    let default_name = target_file.with_extension("bin");
+                    let out_path = filename.as_deref().unwrap_or(default_name.as_path());
+                    println!("Writing to {out_path:?}...");
+
+                    let mut out_file =
+                        OpenOptions::new().write(true).create(true).open(out_path)?;
+                    write!(out_file, "{}", hack_string)?;
+                }
+                OutKind::Stdout => {
+                    if filename.is_some() {
+                        Cli::command()
+                            .error(
+                                ErrorKind::ArgumentConflict,
+                                "--filename cannot be used with --out std",
+                            )
+                            .exit();
+                    }
                     println!("{}", hack_string);
                 }
             }
