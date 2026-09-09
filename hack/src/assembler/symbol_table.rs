@@ -2,7 +2,8 @@ use std::collections::HashMap;
 
 use anyhow::Result;
 
-use crate::assembler::{board, code, symbol};
+use crate::assembler::{code, symbol};
+use crate::board;
 
 pub(super) const STARTING_VARIABLE_VALUE: u16 = 16;
 
@@ -47,7 +48,7 @@ impl<'a> SymbolTable<'a> {
         }
     }
 
-    pub fn for_board(&mut self, board: board::Board<'a>) {
+    pub fn for_board(&mut self, board: &board::Board<'a>) {
         self.table.extend(board.symbols.iter().map(|(k, v)| (k, v)));
     }
 
@@ -131,7 +132,7 @@ fn test_get_and_contains_default_symbol_table() {
 #[test]
 fn test_nand2tetris_simulator_symbols() {
     let mut symbol_table = SymbolTable::default();
-    let board = board::Board::default();
+    let board = &board::Board::default();
     symbol_table.for_board(board);
 
     let screen = symbol::Symbol("SCREEN");
@@ -160,9 +161,9 @@ fn test_go_board_symbols() {
     UART_ST = 0x03FF
     "#;
 
-    let board = board::load(test_string);
+    let board = board::Board::parse_config(test_string);
     assert!(board.is_ok());
-    let board = board.unwrap();
+    let board = &board.unwrap();
 
     symbol_table.for_board(board);
 

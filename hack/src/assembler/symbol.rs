@@ -7,7 +7,7 @@ use crate::assembler::code;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, Deserialize)]
 #[serde(try_from = "&'a str")]
-pub(super) struct Symbol<'a>(pub &'a str);
+pub struct Symbol<'a>(pub &'a str);
 
 impl<'a> TryFrom<&'a str> for Symbol<'a> {
     type Error = anyhow::Error;
@@ -33,7 +33,7 @@ impl fmt::Display for Symbol<'_> {
     }
 }
 
-pub(super) fn parse_symbol(symbol: &str) -> Result<Symbol<'_>> {
+pub(crate) fn parse_symbol(symbol: &str) -> Result<Symbol<'_>> {
     symbol.try_into()
 }
 

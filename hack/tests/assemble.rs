@@ -46,11 +46,12 @@ fn check(asm: &Path) -> Result<(), Failed> {
     let expected_path = asm.with_extension("hack");
     let expected = fs::read_to_string(&expected_path)
         .map_err(|e| format!("{}: {e}", expected_path.display()))?;
-    let got =
-        hack::assembler::assemble(asm, &None).map_err(|e| format!("{}: {e}", asm.display()))?;
+    let asm_string = std::fs::read_to_string(&asm)?;
+    let got = hack::assembler::assemble(asm_string.as_str(), &hack::board::Board::default())
+        .map_err(|e| format!("{}: {e}", asm.display()))?;
 
-    if got.trim_end() != expected.trim_end() {
-        let (line, g, w) = first_diff(&got, &expected);
+    if got.to_string().trim_end() != expected.trim_end() {
+        let (line, g, w) = first_diff(&got.to_string(), &expected);
         return Err(format!(
             "mismatch vs {} at line {line}:\n  got:      {g}\n  expected: {w}",
             expected_path.display()
